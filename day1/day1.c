@@ -7,11 +7,14 @@
 
 int max(int, int);
 bool checkNum1(char);
+char *slice(char*, int);
+char digitTransformation(char*);
+char *checkNum2(char *);
 int part1(char **, int);
 int part2(char **, int);
 
 int main() {
-	FILE *filePointer = fopen("./input_test.txt", "r"); 
+	FILE *filePointer = fopen("./input_puzzle.txt", "r"); 
 
 	char *line = malloc(LINESIZE * sizeof(char));
 	int maxLines = 0;
@@ -35,18 +38,20 @@ int main() {
 		nLine++;
 	}
 
-	// Printing the values
-	printf("Cases: \n");
-	for (int i = 0; i < maxLines; i++) {
-		printf("%s", cValues[i]);
-	}
+	// // Printing the values
+	// printf("Cases: \n");
+	// for (int i = 0; i < maxLines; i++) {
+	// 	printf("%s", cValues[i]);
+	// }
+	printf("=====================================\n");
 
-	printf("Answers: \n");
+	// printf("Answers: \n");
 	int ans1 = part1(cValues, maxLines);
 	int ans2 = part2(cValues, maxLines);
 
 	printf("Part 1: %d\n", ans1);
 	printf("Part 2: %d\n", ans2);
+	printf("=====================================\n");
 
 	fclose(filePointer);
 	free(line);
@@ -59,7 +64,7 @@ int main() {
 
 int part1(char **cValues, int maxLines) {
 	int suma = 0;
-	char *num = (char*)malloc(LINESIZE * sizeof(char));
+	char *num = (char*)malloc(2 * sizeof(char));
 	for (int lineNumber = 0; lineNumber < maxLines; lineNumber++) {
 		int lineLength = strlen(cValues[lineNumber]);
 		bool firstTime = true;
@@ -79,37 +84,100 @@ int part1(char **cValues, int maxLines) {
 }
 
 int part2(char **cValues, int maxLines) {
-	return 0;
+	int suma = 0;
+	char *num = (char*)malloc(2 * sizeof(char));
+	for (int i = 0; i < maxLines; i++) {
+		int lineLength = strlen(cValues[i]);
+		bool firstTime = true;
+		num[0] = '\0';
+		for (int j = 0; j < lineLength - 1; j++) {
+			char *currentChar = checkNum2(&cValues[i][j]);
+			// printf("Current Char: %s \n", currentChar);
+			if (strcmp(currentChar, "0") != 0) {
+				if (firstTime) {
+					num[0] = digitTransformation(currentChar);
+					firstTime = false;
+				}
+				num[1] = digitTransformation(currentChar);
+			}
+		}
+		// printf("%s\n", num);
+		suma += atoi(num);
+	}
+
+	return suma;
 }
 
+char digitTransformation(char *str) {
+	char *digits = "123456789";
+
+	while (strcmp(digits, "\0") != 0) {
+		if (strcmp(str, slice(digits, 1)) == 0) return digits[0];
+		digits++;
+	}
+
+	char letters[9][6] = {
+		"one",
+		"two",
+		"three",
+		"four",
+		"five",
+		"six",
+		"seven",
+		"eight",
+		"nine"
+	};
+
+	for (int i = 0; i < 9; i++) {
+		if (strcmp(str, letters[i]) == 0) return i + 1 + '0';
+	}
+
+	return '0';
+}
 
 bool checkNum1(char c) {
-	if (c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' || c == '0') {
-		return true;
+	char *digits = "123456789";
+	for (int i = 0; i < strlen(digits); i++) {
+		if (c == digits[i]) return true;
 	}
 
 	return false;
 }
 
-bool checkNum2(char c) {
-	if (checkNum1(c)) return true;
-	if (c == 'o' || c == 't' || c == 'f' || 's' || 'e' || 'n') return true;
-	return false;
+char *slice(char *str, int len) {
+	char *newStr = (char *)malloc(len * sizeof(char));
+	for (int i = 0; i < len; i++) {
+		newStr[i] = str[i];
+	}
+	newStr[len] = '\0';
+	return newStr;
 }
 
-bool checkNumSpelled(char *c) {
-	if (strcmp(c, "one") == 0) return true;
-	if (strcmp(c, "two") == 0) return true;
-	if (strcmp(c, "three") == 0) return true;
-	if (strcmp(c, "four") == 0) return true;
-	if (strcmp(c, "five") == 0) return true;
-	if (strcmp(c, "six") == 0) return true;
-	if (strcmp(c, "seven") == 0) return true;
-	if (strcmp(c, "eight") == 0) return true;
-	if (strcmp(c, "nine") == 0) return true;
+char *checkNum2(char *firstChar) {
+	char *numbers = "1,2,3,4,5,6,7,8,9,one,two,three,four,five,six,seven,eight,nine,";
+	char *currentNum = (char *)malloc(10 * sizeof(char));
+	int currentNumIndex = 0;
+	int currentNumLength = 0;
+
+	for (int i = 0; i < strlen(numbers); i++) {
+		if (numbers[i] == ',') {
+			currentNum[currentNumIndex] = '\0';
+			currentNumLength = currentNumIndex;
+			currentNumIndex = 0;
+			// printf("%s %s\n", slice(firstChar, strlen(currentNum)), currentNum);
+			if (strcmp(currentNum, slice(firstChar, strlen(currentNum))) == 0) {
+				// printf("Found: %s\n", currentNum);
+				return currentNum;
+			}
+		} else {
+			currentNum[currentNumIndex] = numbers[i];
+			currentNumIndex++;
+		}
+	}
+
+	return "0";
 }
 
 int max(int a, int b) {
 	return a > b ? a : b;
-	// si a > b entonces regresa a, sino b
 }
